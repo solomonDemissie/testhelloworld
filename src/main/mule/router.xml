@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="aaebfe06-e782-4daf-802e-61c0206323d4" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="a450895d-54d2-4b04-8b35-0cf2be4a5754" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="mule1234" database="dbemployee" />
+	</db:config>
+	<flow name="routerFlow" doc:id="fe957d3a-006a-4958-a1b2-90b282df80af" >
+		<http:listener doc:name="Listener" doc:id="419e9d0e-bee9-43e6-b286-4d88aeae81d5" config-ref="HTTP_Listener_config" path="/robin" allowedMethods="GET"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4595f123-46ab-49f9-a46c-1559b89867e1" message="#[attributes]"/>
+		<round-robin doc:name="Round Robin" doc:id="042d7143-0d52-4425-897e-a51c22b0d876" >
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="820105e2-1fb0-447e-b9ff-d7b407f7ad03" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"First Robin"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="69fb6269-ab44-4903-93cf-14dd9f5cba56" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"second Robin"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="54743e0d-1a38-4e7a-8b26-4c5ea4e7bede" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"Third Robin"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</round-robin>
+		<flow-ref doc:name="Flow Reference" doc:id="7d6cb42c-eca3-4e3e-9a15-b15729553439" name="routerFlow3"/>
+	</flow>
+	<flow name="routerFlow2" doc:id="2a485938-133e-4030-9afa-a007033658f1" >
+		<set-payload value='US' doc:name='payload set to "US"' doc:id="35b4d05e-b127-452b-8cd4-5e35879cecba" />
+		<choice doc:name="Choice" doc:id="095c05d6-6df0-4514-a973-406b7fb1bc2b" >
+			<when expression='#[payload == "ET"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="d5efe8a7-42c1-481d-a5a4-e11187310047" />
+			</when>
+			<when expression='#[payload != "US"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="3f4176d7-2286-4ee3-b310-2f4db937e18d" />
+			</when>
+			<when expression='#[payload == "EU"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="86279c6e-e903-468f-ab85-f54f4263c64e" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="d7a8fdce-01e4-4239-83f1-2c58fbd899d3" />
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="a73301da-cb56-4d16-b6f4-a99bee3b36c8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</flow>
+	<flow name="routerFlow3" doc:id="94ccd61e-da3d-427b-a46a-f412c137cbc5" >
+		<first-successful doc:name="First Successful" doc:id="58fea3bf-0266-481d-b402-e29cfa20a1e3" >
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="946409d8-c5cb-4cf9-9b53-5ac057e817a0" message=" @@@ #[attributesa]"/>
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="1553c999-3c15-4b48-ba5c-ae7b7ce436fa" />
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="813aaba2-cbf3-4d37-b661-44d0830bb54e" />
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="50a7c1ce-bf1c-47b3-8675-058f93018b04" />
+			</route>
+		</first-successful>
+	</flow>
+	<flow name="routerFlow1" doc:id="0b3f443f-92cf-47e9-8086-cb83d9911dca" >
+		<http:listener doc:name="Listener" doc:id="73a9d57f-9958-4e2f-8ebf-faaced43385f" config-ref="HTTP_Listener_config" path="/First" allowedMethods="POST"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7fdf8de9-5b1b-44d6-961c-73f0780f3cad" message="#[payload]"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="4ff33b3a-1dcb-4653-b92a-deb787f5001b" >
+			<route >
+				<db:select doc:name="customer" doc:id="5c2ac64c-3d1b-49a1-88d4-5a7299435de7" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from Customer]]></db:sql>
+				</db:select>
+			</route>
+			<route >
+				<db:select doc:name="employee" doc:id="34b12c5d-b3c8-4bdb-9106-8c1a64e771df" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from employee]]></db:sql>
+				</db:select>
+			</route>
+			<route >
+				<db:select doc:name="manger" doc:id="dedf48ca-39ec-472a-aadc-944729d73c3a" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from Manager]]></db:sql>
+				</db:select>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="2776cfec-d8b1-4dbc-bb0d-7ff4b98b6555" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+flatten(payload..payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
